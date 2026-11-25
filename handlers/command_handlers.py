@@ -162,6 +162,7 @@ async def handle_bind_command(event, client, parts):
             session.commit()
 
             await async_delete_user_message(event.client, event.message.chat_id, event.message.id, 0)
+
             await reply_and_delete(event,
                 f'已设置转发规则:\n'
                 f'规则 ID: {rule.id}\n'
@@ -846,7 +847,10 @@ async def handle_help_command(event, command):
         "• 括号内为命令的简写形式\n"
         "• 尖括号 <> 表示必填参数\n"
         "• 方括号 [] 表示可选参数\n"
-        "• 导入命令需要同时发送文件"
+        "• 导入命令需要同时发送文件\n\n"
+        "🧵 **Topics(线程)提示**\n"
+        "• 想把消息转发到某个 Topic：必须在目标群对应 Topic 内首次执行 /bind 创建规则\n"
+        "• 规则创建后暂不支持修改 Topic：请先删除规则，再在正确的 Topic 内重新 /bind"
     )
 
     await async_delete_user_message(event.client, event.message.chat_id, event.message.id, 0)

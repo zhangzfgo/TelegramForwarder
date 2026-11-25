@@ -445,6 +445,7 @@ PUSH_SETTINGS = {
 
 async def create_settings_text(rule):
     """创建设置信息文本"""
+
     text = (
         "📋 管理转发规则\n\n"
         f"规则ID: `{rule.id}`\n" 
@@ -652,5 +653,4 @@ async def create_buttons(rule):
         session.close()
 
     return buttons
-
 

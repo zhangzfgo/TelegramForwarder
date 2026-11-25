@@ -13,6 +13,13 @@
 </div>
 
 ## 📖 简介
+
+本 fork 已合入上游 PR #92（代理、目标 Topic、贴纸过滤与立即总结回溯范围）。
+镜像为 `ghcr.io/zhangzf16/telegramforwarder:latest`，支持 `linux/amd64` 和 `linux/arm64`；
+`docker-compose.yml` 已默认使用此镜像。
+代理通过 `.env.example` 中的 `PROXY_*` 变量配置。
+绑定 Topic 时，请在目标群的对应 Topic 中执行 `/bind <来源频道链接或名称>`。
+
 Telegram 转发器是一个强大的消息转发工具，只需要你的账号加入频道/群聊即可以将指定聊天中的消息转发到其他聊天，不需要bot进入对应的频道/群组即可监听。可用于信息流整合过滤，消息提醒，内容收藏等多种场景, 不受转发/复制禁止的限制。此外，利用 Apprise 强大的推送功能，你可以轻松将消息分发至聊天软件、邮件、短信、Webhooks、APIs 等各种平台。
 
 ## ✨ 特性
