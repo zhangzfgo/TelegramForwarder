@@ -70,7 +70,7 @@ async def login_page(request: Request, user = Depends(get_current_user)):
         users = db_session.query(User).all()
         if not users:
             return RedirectResponse(url="/register", status_code=status.HTTP_302_FOUND)
-        return templates.TemplateResponse("login.html", {"request": request})
+        return templates.TemplateResponse(request, "login.html")
     finally:
         db_session.close()
 
@@ -86,8 +86,9 @@ async def login(
         user = await db_ops.verify_user(db_session, form_data.username, form_data.password)
         if not user:
             return templates.TemplateResponse(
+                request,
                 "login.html",
-                {"request": request, "error": "用户名或密码错误"},
+                {"error": "用户名或密码错误"},
                 status_code=status.HTTP_401_UNAUTHORIZED
             )
         
@@ -115,7 +116,7 @@ async def register_page(request: Request):
         users = db_session.query(User).all()
         if users:
             return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-        return templates.TemplateResponse("register.html", {"request": request})
+        return templates.TemplateResponse(request, "register.html")
     finally:
         db_session.close()
 
@@ -128,8 +129,9 @@ async def register(request: Request):
     
     if password != confirm_password:
         return templates.TemplateResponse(
+            request,
             "register.html",
-            {"request": request, "error": "两次输入的密码不一致"},
+            {"error": "两次输入的密码不一致"},
             status_code=status.HTTP_400_BAD_REQUEST
         )
     
@@ -139,8 +141,9 @@ async def register(request: Request):
         user = await db_ops.create_user(db_session, username, password)
         if not user:
             return templates.TemplateResponse(
+                request,
                 "register.html",
-                {"request": request, "error": "创建用户失败"},
+                {"error": "创建用户失败"},
                 status_code=status.HTTP_400_BAD_REQUEST
             )
         
@@ -222,4 +225,4 @@ async def change_password(
         finally:
             db_session.close()
     except Exception as e:
-        return JSONResponse({"success": False, "message": f"修改密码出错: {str(e)}"}) 
+        return JSONResponse({"success": False, "message": f"修改密码出错: {str(e)}"})

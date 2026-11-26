@@ -95,9 +95,9 @@ async def rss_dashboard(request: Request, user = Depends(get_current_user)):
             })
         
         return templates.TemplateResponse(
-            "rss_dashboard.html", 
+            request,
+            "rss_dashboard.html",
             {
-                "request": request,
                 "user": user,
                 "rss_configs": configs_list,
                 "rules": rules_list,
@@ -461,4 +461,4 @@ async def test_regex(user = Depends(get_current_user),
         return JSONResponse({
             "success": False,
             "message": f"测试失败: {str(e)}"
-        }) 
+        })
