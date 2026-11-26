@@ -15,7 +15,7 @@
 ## 📖 简介
 
 本 fork 已合入上游 PR #92（代理、目标 Topic、贴纸过滤与立即总结回溯范围）。
-镜像为 `ghcr.io/zhangzf16/telegramforwarder:latest`，支持 `linux/amd64` 和 `linux/arm64`；
+镜像为 `ghcr.io/zhangzfgo/telegramforwarder:latest`，支持 `linux/amd64` 和 `linux/arm64`；
 `docker-compose.yml` 已默认使用此镜像。
 代理通过 `.env.example` 中的 `PROXY_*` 变量配置。
 绑定 Topic 时，请在目标群的对应 Topic 中执行 `/bind <来源频道链接或名称>`。
