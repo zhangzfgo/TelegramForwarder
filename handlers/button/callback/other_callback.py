@@ -5,7 +5,7 @@ import asyncio
 from telethon.tl import types
 
 from handlers.button.button_helpers import create_media_size_buttons,create_media_settings_buttons,create_media_types_buttons,create_media_extensions_buttons
-from models.models import ForwardRule, MediaTypes, MediaExtensions, RuleSync, Keyword, ReplaceRule
+from models.models import Chat, ForwardRule, MediaTypes, MediaExtensions, RuleSync, Keyword, ReplaceRule
 from enums.enums import AddMode
 import logging
 from utils.common import get_media_settings_text, get_db_ops

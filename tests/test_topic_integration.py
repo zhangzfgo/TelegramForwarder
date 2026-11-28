@@ -2,7 +2,7 @@
 import unittest
 from datetime import datetime, timezone
 from types import SimpleNamespace as NS
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -11,6 +11,7 @@ from telethon.tl import types
 from filters.ai_filter import _get_chat_messages
 from handlers import command_handlers as commands
 from handlers.button.callback import callback_handlers as callbacks
+from handlers.button.callback import other_callback
 from handlers.button.settings_manager import create_settings_text
 from models.models import Base, Chat, ForwardRule, Keyword
 from scheduler import summary_scheduler
@@ -143,6 +144,53 @@ class RuleFlowTests(unittest.IsolatedAsyncioTestCase):
         with self.sessions() as session:
             await callbacks.callback_switch(self.event, '111', session, NS(edit=AsyncMock()), '')
             self.assertIn('重新选择', self.event.answer.await_args.args[0])
+
+    async def delete_from_settings(self, session, rule_ids):
+        rss_client = MagicMock()
+        rss_client.__aenter__.return_value = rss_client
+        rss_client.delete.return_value.__aenter__.return_value = NS(status=200)
+        self.event.client = NS()
+        self.event.chat_id = -100222
+        screen = NS(delete=AsyncMock())
+        with patch.object(other_callback.aiohttp, 'ClientSession', return_value=rss_client), \
+                patch.object(other_callback, 'send_message_and_delete', AsyncMock()) as notify:
+            await other_callback.callback_perform_delete_rule(
+                self.event, rule_ids, session, screen, f'perform_delete_rule:{rule_ids}')
+            notify.assert_awaited_once()
+        screen.delete.assert_awaited_once()
+        self.event.answer.assert_awaited_once_with('规则已成功删除')
+
+    async def test_delete_current_topic_rule_clears_selection_and_preserves_sibling(self):
+        await self.bind(17, 12)
+        await self.bind(18, 13)
+        with self.sessions() as session:
+            first, second = session.query(ForwardRule).order_by(ForwardRule.id).all()
+            first_id, second_id, target_id = first.id, second.id, first.target_chat_id
+            session.add(Keyword(rule_id=first_id, keyword='delete me'))
+            session.add(Keyword(rule_id=second_id, keyword='keep me'))
+            session.commit()
+            await self.delete_from_settings(session, str(first_id))
+        with self.sessions() as session:
+            self.assertIsNone(session.get(ForwardRule, first_id))
+            self.assertIsNotNone(session.get(ForwardRule, second_id))
+            target = session.get(Chat, target_id)
+            self.assertIsNone(target.current_rule_id)
+            self.assertIsNone(target.current_add_id)
+            self.assertEqual([k.keyword for k in session.query(Keyword).all()], ['keep me'])
+
+    async def test_delete_other_topic_rule_preserves_current_selection(self):
+        await self.bind(17, 12)
+        await self.bind(18, 13)
+        with self.sessions() as session:
+            first, second = session.query(ForwardRule).order_by(ForwardRule.id).all()
+            first_id, second_id, target_id = first.id, second.id, first.target_chat_id
+            await self.delete_from_settings(session, f'{first_id}:{second_id}')
+        with self.sessions() as session:
+            self.assertIsNotNone(session.get(ForwardRule, first_id))
+            self.assertIsNone(session.get(ForwardRule, second_id))
+            target = session.get(Chat, target_id)
+            self.assertEqual(target.current_rule_id, first_id)
+            self.assertEqual(target.current_add_id, '111')
 
     async def test_copy_settings_preserves_both_route_endpoints(self):
         await self.bind(17, 12)
